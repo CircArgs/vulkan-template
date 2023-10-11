@@ -16,7 +16,7 @@ BASE_INCLUDES := -I$(VULKAN_BASE)/include -I/opt/homebrew/include
 BASE_LFLAGS := -L$(VULKAN_BASE)/lib -L/opt/homebrew/lib
 
 # Libraries
-BASE_LIBS := -lvulkan.1 -lvulkan.1.3.261 -lglfw.3.3
+BASE_LIBS := -lvulkan -lglfw
 
 CXXFLAGS := $(BASE_FLAGS) $(BASE_INCLUDES)
 
