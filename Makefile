@@ -1,13 +1,19 @@
 # See: makefiletutorial.com
 
+
+
+# cpp variables
 TARGET_EXEC := main
 CXX := clang++
 BUILD_DIR := ./build
 SRC_DIRS := ./src
-
 VULKAN_BASE := /Users/nick/VulkanSDK/1.3.261.1/macOS
-
 BASE_FLAGS := -std=c++20 
+
+# START shader variables
+GLSLC:=$(VULKAN_BASE)/bin/glslc
+SHADER_DIR := ./shaders
+# END shader variables
 
 # Include directories
 BASE_INCLUDES := -I$(VULKAN_BASE)/include -I/opt/homebrew/include
@@ -49,6 +55,10 @@ PROD_FLAGS := -O2
 # Debug flags with -g for debugging information
 DEBUG_FLAGS := -g
 
+.PHONY: build clean
+
+build: $(BUILD_DIR)/$(TARGET_EXEC)
+
 # The final build step with debug flags (conditionally)
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS) $(if $(DEBUG),$(DEBUG_FLAGS)) $(if $(PROD),$(PROD_FLAGS))
@@ -62,7 +72,6 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	./$(BUILD_DIR)/$(TARGET_EXEC)
 
-.PHONY: clean
 clean:
 	rm -r $(BUILD_DIR)
 
@@ -78,3 +87,22 @@ prod: $(BUILD_DIR)/$(TARGET_EXEC)
 # Rule to build with debug flags (set DEBUG=1 to enable)
 debug: DEBUG := 1
 debug: $(BUILD_DIR)/$(TARGET_EXEC)
+
+
+# shader rules
+
+SHADER_SOURCES := $(wildcard $(SHADER_DIR)/*.frag $(SHADER_DIR)/*.vert)
+SHADER_OBJECTS := $(patsubst $(SHADER_DIR)/%.frag,$(SHADER_DIR)/%.frag.spv,$(SHADER_SOURCES)) \
+                  $(patsubst $(SHADER_DIR)/%.vert,$(SHADER_DIR)/%.vert.spv,$(SHADER_SOURCES))
+SHADER_SPV := $(wildcard $(SHADER_DIR)/*.frag.spv $(SHADER_DIR)/*.vert.spv)
+
+build_shaders: $(SHADER_OBJECTS)
+
+$(SHADER_DIR)/%.frag.spv: $(SHADER_DIR)/%.frag
+	$(GLSLC) $< -o $@
+
+$(SHADER_DIR)/%.vert.spv: $(SHADER_DIR)/%.vert
+	$(GLSLC) $< -o $@
+
+clean_shaders:
+	rm -f $(SHADER_SPV)
